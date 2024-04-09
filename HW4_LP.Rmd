@@ -1,0 +1,96 @@
+---
+title: "HW4_LP"
+author: "Luke Profio"
+date: "`r Sys.Date()`"
+output:
+  pdf_document: default
+  html_document: default
+---
+## Question 1
+```{r question_1, include=TRUE, echo=FALSE, message=FALSE}
+library(tidyverse)
+library(jsonlite)
+library(httr)
+
+ip_address2country_code <- function(ip_addresses) {
+  ip_api_url <- "http://ip-api.com/batch/"
+  df <- data.frame(query = ip_addresses)
+  request_body <- toJSON(df)
+  response <- POST(url = ip_api_url, body = request_body)
+  response_content <- content(response)
+  country_codes <-
+    sapply(response_content, function(x)
+      ifelse(is.null(x$countryCode), NA_character_, x$countryCode))
+  return(country_codes)
+}
+
+logins = read_csv("logins.csv")
+
+new_logins = logins |>
+  mutate(
+    last_seen = as.integer(difftime(utc_time, lag(utc_time), units = "days")),
+    is_weekend = weekdays(utc_time) %in% c('Saturday', 'Sunday'),
+    country_code = ip_address2country_code(ip_address)
+    )
+new_logins
+```
+## Question 2
+```{r question_2, include=TRUE, echo=FALSE, message=FALSE}
+fizzbuzz <- function(n) {
+  if (n %% 3 == 0 && n %% 5 == 0) {
+    return("fizzbuzz")
+  } else if (n %% 3 ==0) {
+    return("fizz")
+  } else if (n %% 5 == 0) {
+    return ("buzz")
+  } else {
+    return(as.character(n))
+  }
+}
+
+for (i in 0:15) {
+  print(fizzbuzz(i))
+}
+```
+## Question 3
+```{r question_3, include=TRUE, echo=FALSE, message=FALSE}
+fizzbuzz2 <- function(n) {
+  map_chr(n, fizzbuzz)
+}
+
+fizzbuzz2(0:15)
+```
+## Question 4
+```{r question_4, include=TRUE, echo=FALSE, message=FALSE}
+fibonacci <- function(n) {
+  if (n == 1) {
+    return(0)
+  } else if (n == 2) {
+    return(1)
+  }
+
+fibPrev = 0 
+fibCurrent = 1
+
+  for (i in 3:n) {
+    fibNext = fibPrev + fibCurrent
+    fibPrev = fibCurrent
+    fibCurrent = fibNext
+  }
+
+  return(fibCurrent)
+}
+
+for (i in 1:6) {
+  cat("fibonacci(", i, ")\n", sep="")
+  print(fibonacci(i))
+}
+```
+## Question 5
+```{r question_5, include=TRUE, error=TRUE, echo=FALSE, message=FALSE}
+fibonacci_vec <- Vectorize(fibonacci)
+
+print(fibonacci(1:10))
+print("Result from fibonacci_vec function:")
+print(fibonacci_vec(1:10))
+```
